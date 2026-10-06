@@ -12,7 +12,7 @@ import SwiftData
 struct Tienda_IAApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            Cliente.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
@@ -25,7 +25,7 @@ struct Tienda_IAApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            VistaCliente()
         }
         .modelContainer(sharedModelContainer)
     }
