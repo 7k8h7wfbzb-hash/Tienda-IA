@@ -5,17 +5,17 @@
 //  Created by kleber oswaldo muy landi on 4/10/26.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct FormularioCliente: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    
+
     var clienteAEditar: Cliente? = nil
-    
+
     @State private var vm = ModeloVistaCliente()
-    
+
     @State private var cedula: String = ""
     @State private var nombres: String = ""
     @State private var apellidos: String = ""
@@ -24,7 +24,7 @@ struct FormularioCliente: View {
     @State private var telefono: String = ""
     @State private var email: String = ""
     @State private var imagen: String = ""
-    
+
     @State private var mostrarAlerta: Bool = false
     @State private var mensajeAlerta: String = ""
 
@@ -43,7 +43,7 @@ struct FormularioCliente: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal)
-                    
+
                     // Campos usando tu componente personalizado "textoEntrada"
                     VStack(spacing: 14) {
                         textoEntrada(
@@ -52,32 +52,32 @@ struct FormularioCliente: View {
                             texto: $cedula,
                             teclado: .numberPad
                         )
-                        
+
                         textoEntrada(
                             titulo: "Nombres",
                             icono: "person",
                             texto: $nombres
                         )
-                        
+
                         textoEntrada(
                             titulo: "Apellidos",
                             icono: "person.fill",
                             texto: $apellidos
                         )
-                        
+
                         textoEntrada(
                             titulo: "Dirección",
                             icono: "map",
                             texto: $direccion
                         )
-                        
+
                         textoEntrada(
                             titulo: "Teléfono",
                             icono: "phone",
                             texto: $telefono,
                             teclado: .phonePad
                         )
-                        
+
                         textoEntrada(
                             titulo: "Correo Electrónico",
                             icono: "envelope",
@@ -86,21 +86,25 @@ struct FormularioCliente: View {
                         )
                     }
                     .padding(.horizontal)
-                    
+
                     // Selector de Fecha limpio
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Fecha de Nacimiento")
                             .font(.subheadline)
                             .fontWeight(.medium)
                             .foregroundColor(.secondary)
-                        
-                        DatePicker("", selection: $fechaNacimiento, displayedComponents: .date)
-                            .datePickerStyle(.wheel)
-                            .labelsHidden()
+
+                        DatePicker(
+                            "",
+                            selection: $fechaNacimiento,
+                            displayedComponents: .date
+                        )
+                        .datePickerStyle(.wheel)
+                        .labelsHidden()
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal)
-                    
+
                     // Botón de Guardar Principal
                     Button(action: guardarCliente) {
                         Text(clienteAEditar == nil ? "Guardar" : "Actualizar")
@@ -125,28 +129,29 @@ struct FormularioCliente: View {
                 }
             }
             .alert("Aviso", isPresented: $mostrarAlerta) {
-                Button("OK", role: .cancel) { }
+                Button("OK", role: .cancel) {}
             } message: {
                 Text(mensajeAlerta)
             }
-            .onAppear{
+            .onAppear {
                 if let cliente = clienteAEditar {
-                    cedula  = cliente.cedula
+                    cedula = cliente.cedula
                     nombres = cliente.nombres
                     apellidos = cliente.apellidos
                     direccion = cliente.direccion
                     fechaNacimiento = cliente.fechaNacimiento
                     telefono = cliente.telefono
                     email = cliente.email
-                    imagen  = cliente.imagen
+                    imagen = cliente.imagen
                 }
             }
         }
     }
-    
+
     private func guardarCliente() {
         guard !cedula.isEmpty, !nombres.isEmpty, !apellidos.isEmpty else {
-            mensajeAlerta = "Por favor, completa al menos la cédula, nombres y apellidos."
+            mensajeAlerta =
+                "Por favor, completa al menos la cédula, nombres y apellidos."
             mostrarAlerta = true
             return
         }
@@ -176,54 +181,10 @@ struct FormularioCliente: View {
             )
             vm.guardarCliente(cliente: nuevoCliente, contexto: modelContext)
             dismiss()
-                              }
-        
-    }
-            
-    }
-
-
-// MARK: - Componente Personalizado
-struct textoEntrada: View {
-    var titulo: String
-    var icono: String
-    @Binding var texto: String
-    var teclado: UIKeyboardType = .default
-    var esSeguro: Bool = false
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: icono)
-                .foregroundColor(.secondary)
-                .font(.system(size: 18, weight: .semibold))
-                .frame(width: 24)
-
-            if esSeguro {
-                SecureField(titulo, text: $texto)
-            } else {
-                TextField(titulo, text: $texto)
-                    .keyboardType(teclado)
-                    .autocapitalization(.none)
-            }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color(.systemGray6))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(texto.isEmpty ? Color.clear : Color.blue.opacity(0.6), lineWidth: 1.5)
-        )
-    }
-}
 
-// MARK: - Previews
-#Preview("Componente Individual") {
-    @Previewable @State var textoPrueba = "Ejemplo"
-    return textoEntrada(titulo: "Nombres", icono: "person.crop.circle", texto: $textoPrueba)
-        .padding()
+    }
+
 }
 
 #Preview("Formulario Completo") {
