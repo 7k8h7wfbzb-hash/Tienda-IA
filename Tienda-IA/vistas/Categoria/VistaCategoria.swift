@@ -19,7 +19,7 @@ struct VistaCategoria: View {
     @State private var vm = CategoriaVistaModelo()
     
     var body: some View {
-        NavigationStack {
+        
             Form {
                 // Sección para el formulario de creación
                 Section(header: Text("Crear nueva categoría")) {
@@ -65,7 +65,7 @@ struct VistaCategoria: View {
             }
             .navigationTitle("Categorías")
         }
-    }
+    
     
     private func guardar() {
         let nombreLimpio = nombre.trimmingCharacters(in: .whitespaces)
@@ -82,12 +82,14 @@ struct VistaCategoria: View {
     private func eliminarCategoria(at offsets: IndexSet) {
         for index in offsets {
             let categoria = categorias[index]
-            modelContext.delete(categoria)
+            vm.eliminarCategoria(categoria: categoria, contexto: modelContext)
         }
     }
 }
 
 #Preview {
-    VistaCategoria()
-        .modelContainer(for: Categoria.self, inMemory: true)
+    NavigationStack{
+        VistaCategoria()
+            .modelContainer(for: Categoria.self, inMemory: true)
+    }
 }

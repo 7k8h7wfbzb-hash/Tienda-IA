@@ -11,6 +11,8 @@ import SwiftData
 @Observable
 final class ModeloVistaProducto{
     
+    var mensajeError:String?
+    
     func guardar(producto:Producto,contexto:ModelContext){
         contexto.insert(producto)
         do {

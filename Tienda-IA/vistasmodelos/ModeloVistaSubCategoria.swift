@@ -11,6 +11,8 @@ import SwiftData
 @Observable
 final class ModeloVistaSubCategoria{
     
+    var mensajeError: String?
+    
     func guardarSubCategoria(subCategoria: SubCategoria,contexto:ModelContext){
         contexto.insert(subCategoria)
         do {

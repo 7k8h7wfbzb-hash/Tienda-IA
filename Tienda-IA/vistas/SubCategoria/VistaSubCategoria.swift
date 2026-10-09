@@ -1,7 +1,6 @@
+//
 //  VistaSubCategoria.swift
 //  Tienda-IA
-//
-//  Created by kleber oswaldo muy landi on 6/10/26.
 //
 
 import SwiftData
@@ -12,85 +11,74 @@ struct VistaSubCategoria: View {
 
     let categoria: Categoria
 
-    // Consulta reactiva filtrada por la categoría actual
-    @Query private var subCategorias: [SubCategoria]
-
     @State private var nnombre: String = ""
     @State private var descripcion: String = ""
 
-    // ViewModel correctamente instanciado con @State
     @State private var vm = ModeloVistaSubCategoria()
 
-    // Inicializador para filtrar las subcategorías por la categoría recibida
-    init(categoria: Categoria) {
-        self.categoria = categoria
-        let categoriaID = categoria.id
+    // ✅ Ya NO necesitamos @Query ni #Predicate ni init personalizado.
+    // Usamos la relación inversa directamente: es reactiva y siempre
+    // está sincronizada con la base de datos.
 
-        _subCategorias = Query(
-            filter: #Predicate<SubCategoria> { sub in
-                // Ajusta esto según cómo relacione tu modelo SubCategoria la categoría (por ID o por relación directa)
-                sub.categoria?.id == categoriaID
-            },
-            sort: \SubCategoria.nombre
-        )
+    // Mantenemos el orden alfabético que antes daba el @Query
+    private var subCategorias: [SubCategoria] {
+        categoria.subCategorias?.sorted { $0.nombre < $1.nombre } ?? []
     }
 
     var body: some View {
-        NavigationStack {
-            VStack {
-                Form {
-                    Section(
-                        header: Text(
-                            "Nueva subcategoría para: \(categoria.nombre)"
-                        )
-                    ) {
-                        TextField("Nombre de la subcategoría", text: $nnombre)
-                        TextField("Descripción (opcional)", text: $descripcion)
+        VStack {
+            Form {
+                Section(
+                    header: Text(
+                        "Nueva subcategoría para: \(categoria.nombre)"
+                    )
+                ) {
+                    TextField("Nombre de la subcategoría", text: $nnombre)
+                    TextField("Descripción (opcional)", text: $descripcion)
 
-                        Button(action: agregar) {
-                            Text("Agregar Subcategoría")
-                                .frame(maxWidth: .infinity, alignment: .center)
-                        }
-                        .disabled(
-                            nnombre.trimmingCharacters(in: .whitespaces).isEmpty
-                        )
+                    Button(action: agregar) {
+                        Text("Agregar Subcategoría")
+                            .frame(maxWidth: .infinity, alignment: .center)
                     }
-                }
-                .frame(height: 250)  // Limitamos la altura del formulario superior para dar espacio a la lista
-
-                // Listado filtrado
-                Group {
-                    if subCategorias.isEmpty {
-                        ContentUnavailableView(
-                            "No hay subcategorías",
-                            systemImage: "folder.badge.questionmark",
-                            description: Text(
-                                "Crea una nueva subcategoría usando el formulario superior."
-                            )
-                        )
-                    } else {
-                        List {
-                            ForEach(subCategorias) { subCategoria in
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(subCategoria.nombre)
-                                        .font(.headline)
-                                    if !subCategoria.descripcion.isEmpty {
-                                        Text(subCategoria.descripcion)
-                                            .font(.subheadline)
-                                            .foregroundColor(.secondary)
-                                    }
-                                }
-                                .padding(.vertical, 4)
-                            }
-                            .onDelete(perform: eliminar)
-                        }
-                        .listStyle(.insetGrouped)
-                    }
+                    .disabled(
+                        nnombre.trimmingCharacters(in: .whitespaces).isEmpty
+                    )
                 }
             }
-            .navigationTitle("Subcategorías")
-            .navigationBarTitleDisplayMode(.inline)
+            .frame(height: 250)
+
+            Group {
+                if subCategorias.isEmpty {
+                    ContentUnavailableView(
+                        "No hay subcategorías",
+                        systemImage: "folder.badge.questionmark",
+                        description: Text(
+                            "Crea una nueva subcategoría usando el formulario superior."
+                        )
+                    )
+                } else {
+                    List {
+                        ForEach(subCategorias) { subCategoria in
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(subCategoria.nombre)
+                                    .font(.headline)
+                                if !subCategoria.descripcion.isEmpty {
+                                    Text(subCategoria.descripcion)
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                            .padding(.vertical, 4)
+                        }
+                        .onDelete(perform: eliminar)
+                    }
+                    .listStyle(.insetGrouped)
+                }
+            }
         }
+        .navigationTitle("Subcategorías")
+        .navigationBarTitleDisplayMode(.inline)
+        
     }
 
     private func agregar() {
@@ -100,14 +88,15 @@ struct VistaSubCategoria: View {
         let nuevaSub = SubCategoria(
             nombre: nombreLimpio,
             descripcion: descripcion,
-            categoria: categoria  // Pasamos la relación directa con la categoría
+            categoria: categoria
         )
 
         vm.guardarSubCategoria(subCategoria: nuevaSub, contexto: modelContext)
 
-        // Limpiamos los campos tras guardar
-        nnombre = ""
-        descripcion = ""
+        if vm.mensajeError == nil {
+            nnombre = ""
+            descripcion = ""
+        }
     }
 
     private func eliminar(indexSet: IndexSet) {
@@ -131,6 +120,8 @@ struct VistaSubCategoria: View {
     )
     container.mainContext.insert(categoriaMock)
 
-    return VistaSubCategoria(categoria: categoriaMock)
-        .modelContainer(container)
+    return NavigationStack {
+        VistaSubCategoria(categoria: categoriaMock)
+    }
+    .modelContainer(container)
 }

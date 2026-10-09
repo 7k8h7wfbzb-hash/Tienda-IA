@@ -1,3 +1,4 @@
+import SwiftData
 //
 //  FormularioProducto.swift
 //  Tienda-IA
@@ -5,7 +6,6 @@
 //  Created by kleber oswaldo muy landi on 7/10/26.
 //
 import SwiftUI
-import SwiftData
 
 struct FormularioProducto: View {
     @Environment(\.modelContext) private var modelContext
@@ -15,7 +15,7 @@ struct FormularioProducto: View {
 
     @Query private var categorias: [Categoria]
     @Query private var subcategorias: [SubCategoria]
-    
+
     let productoAEditar: Producto?
 
     @State private var nombre: String = ""
@@ -27,7 +27,7 @@ struct FormularioProducto: View {
         self.productoAEditar = productoAEditar
         _nombre = State(initialValue: productoAEditar?.nombre ?? "")
         _descripcion = State(initialValue: productoAEditar?.descripcion ?? "")
-        
+
         // Usamos la propiedad exacta de tu modelo: subCategoria
         let subActual = productoAEditar?.subCategoria
         _subCategoriaSeleccionada = State(initialValue: subActual)
@@ -45,7 +45,7 @@ struct FormularioProducto: View {
                 TextField("Nombre del producto", text: $nombre)
                 TextField("Descripción", text: $descripcion)
             }
-            
+
             Section(header: Text("Clasificación")) {
                 Picker("Categoría", selection: $categoriaSeleccionada) {
                     Text("Selecciona una categoría").tag(Categoria?.none)
@@ -54,7 +54,9 @@ struct FormularioProducto: View {
                     }
                 }
                 .onChange(of: categoriaSeleccionada) { _, nuevaCategoria in
-                    if let subActual = subCategoriaSeleccionada, subActual.categoria != nuevaCategoria {
+                    if let subActual = subCategoriaSeleccionada,
+                        subActual.categoria != nuevaCategoria
+                    {
                         subCategoriaSeleccionada = nil
                     }
                 }
@@ -69,46 +71,59 @@ struct FormularioProducto: View {
             }
 
             Button(action: guardarOActualizarProducto) {
-                Text(productoAEditar == nil ? "Guardar Producto" : "Actualizar Producto")
-                    .frame(maxWidth: .infinity, alignment: .center)
+                Text(
+                    productoAEditar == nil
+                        ? "Guardar Producto" : "Actualizar Producto"
+                )
+                .frame(maxWidth: .infinity, alignment: .center)
             }
-            .disabled(nombre.trimmingCharacters(in: .whitespaces).isEmpty || subCategoriaSeleccionada == nil)
+            .disabled(
+                nombre.trimmingCharacters(in: .whitespaces).isEmpty
+                    || subCategoriaSeleccionada == nil
+            )
         }
-        .navigationTitle(productoAEditar == nil ? "Nuevo Producto" : "Editar Producto")
+        .navigationTitle(
+            productoAEditar == nil ? "Nuevo Producto" : "Editar Producto"
+        )
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Menu{
-                    Section("Clasificación"){
+                Menu {
+                    Section("Clasificación") {
                         NavigationLink(destination: VistaCategoria()) {
-                            Label("Administrar Categorías", systemImage: "folder.badge.gearshape")
+                            Label(
+                                "Administrar Categorías",
+                                systemImage: "folder.badge.gearshape"
+                            )
                         }
                     }
-                    Section("Inventario"){
-                        
-                            
-                        
+                    Section("Inventario") {
+
                     }
-                                    } label: {
-                                        Image(systemName: "ellipsis.circle.fill")
-                                            .font(.title3)                }
+                } label: {
+                    Image(systemName: "ellipsis.circle.fill")
+                        .font(.title3)
+                }
             }
         }
+        
     }
 
     private func guardarOActualizarProducto() {
         let nombreLimpio = nombre.trimmingCharacters(in: .whitespaces)
-        guard !nombreLimpio.isEmpty, let subCategoriaSeleccionada else { return }
+        guard !nombreLimpio.isEmpty, let subCategoriaSeleccionada else {
+            return
+        }
 
         if let productoExistente = productoAEditar {
             productoExistente.nombre = nombreLimpio
             productoExistente.descripcion = descripcion
-            productoExistente.subCategoria = subCategoriaSeleccionada // Asignación correcta
+            productoExistente.subCategoria = subCategoriaSeleccionada  // Asignación correcta
             vm.actualizar(producto: productoExistente, contexto: modelContext)
         } else {
             let nuevoProducto = Producto(
                 nombre: nombreLimpio,
                 descripcion: descripcion,
-                subCategoria: subCategoriaSeleccionada // Inicialización correcta
+                subCategoria: subCategoriaSeleccionada  // Inicialización correcta
             )
             vm.guardar(producto: nuevoProducto, contexto: modelContext)
         }
@@ -121,5 +136,8 @@ struct FormularioProducto: View {
     NavigationStack {
         FormularioProducto(productoAEditar: nil)
     }
-    .modelContainer(for: [Producto.self, Categoria.self, SubCategoria.self], inMemory: true)
+    .modelContainer(
+        for: [Producto.self, Categoria.self, SubCategoria.self],
+        inMemory: true
+    )
 }

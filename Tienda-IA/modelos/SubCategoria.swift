@@ -16,7 +16,8 @@ final class SubCategoria{
     
     var categoria:Categoria?
     
-    @Relationship(deleteRule:.cascade,inverse: \Producto.subCategoria) var productos:[Producto]? = []
+    @Relationship(deleteRule:.cascade,inverse: \Producto.subCategoria)
+    var productos:[Producto] = []
     
     init(id: UUID=UUID(), nombre: String, descripcion: String, categoria: Categoria? = nil) {
         self.id = id
